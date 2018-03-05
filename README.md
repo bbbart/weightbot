@@ -13,3 +13,6 @@ Warning:
 Commands:
 * /start: greets you
 * /stats: presents you with some statistics on the logged weights
+
+Screenshot:
+![screenshot](doc/stats.png)

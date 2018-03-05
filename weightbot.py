@@ -9,7 +9,6 @@ import csv
 import logging
 import os
 import tempfile
-
 from pathlib import Path
 
 import matplotlib

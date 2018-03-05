@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Telegram Bot to collect weight measurements and their timestamp into a
-CSV file for future reference."""
+CSV file for some very simple statistical analysis and goal follow-up."""
 
 import configparser
 import csv

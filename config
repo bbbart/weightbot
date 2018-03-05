@@ -1,0 +1,4 @@
+[DEFAULT]
+GOAL = -1  # kg diff per month
+TOKEN = <your Telegram bot token>  # see https://core.telegram.org/bots#botfather
+CSVFILE = data.csv

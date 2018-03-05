@@ -7,7 +7,6 @@ CSV file for some very simple statistical analysis and goal follow-up."""
 import configparser
 import csv
 import logging
-import os
 import tempfile
 from pathlib import Path
 
@@ -140,9 +139,9 @@ def store_weight(weight):
 
 def main():
     """Run bot."""
-    if not os.path.isfile(CONFIG['csvfile']) or os.stat(
-            CONFIG['csvfile']).st_size == 0:
-        with open(CONFIG['csvfile'], mode='w', newline='') as csvfile:
+    csvfile_path = Path(CONFIG['csvfile'])
+    if not csvfile_path.is_file() or csvfile_path.stat().st_size == 0:
+        with csvfile_path.open(mode='w', newline='') as csvfile:
             weightwriter = csv.writer(csvfile)
             weightwriter.writerow(['timestamp', 'weight'])
 

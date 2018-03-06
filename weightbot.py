@@ -23,7 +23,7 @@ BASEDIR = Path(__file__).parent
 
 CONFIG = configparser.ConfigParser(inline_comment_prefixes='#')
 CONFIG.read((BASEDIR / 'config', BASEDIR / 'config.local'))
-CONFIG = CONFIG[configparser.DEFAULTSECT]
+CONFIG = CONFIG['weightbot']
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

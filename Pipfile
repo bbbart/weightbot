@@ -1,0 +1,46 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+blessings = "*"
+bpython = "*"
+certifi = "*"
+chardet = "*"
+curtsies = "*"
+Cycler = "*"
+greenlet = "*"
+idna = "*"
+isort = "*"
+matplotlib = "*"
+mccabe = "*"
+numpy = "*"
+pandas = "*"
+pendulum = "*"
+Pygments = "*"
+pyparsing = "*"
+python-dateutil = "*"
+python-telegram-bot = "*"
+pytz = "*"
+pytzdata = "*"
+requests = "*"
+telegram = "*"
+tzlocal = "*"
+"urllib3" = "*"
+urwid = "*"
+wcwidth = "*"
+
+[dev-packages]
+"autopep8" = "*"
+"flake8" = "*"
+future = "*"
+futures = "*"
+pudb = "*"
+pycodestyle = "*"
+pyflakes = "*"
+six = "*"
+typing = "*"
+
+[requires]
+python_version = "3.7"

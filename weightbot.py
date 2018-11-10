@@ -91,25 +91,23 @@ def bot_stats(bot, update):
     weight_max_timestamp = pendulum.instance(
         data.weight.idxmax()).diff_for_humans()
 
-    x = matplotlib.dates.date2num(data.index.to_pydatetime())
-    y = data.weight
-    fit_a, fit_b = np.polyfit(x, y, deg=1)
-    weight_loss = fit_a * (x[0] - x[-1])
+    means = data.resample('W', kind='period').mean()
+    weight_orig = means.weight[0]
+    weight_now = means.weight[-1]
+    weight_loss = weight_orig - weight_now
     weight_loss_period = (data.index.max() - data.index.min()
                           ) / np.timedelta64(1, 'D')
-
-    weight_goal = fit_a * x[0] + fit_b + \
-        (12 * float(CONFIG['goal']) / 365 * weight_loss_period)
-    weight_orig = fit_a * x[0] + fit_b
-    weight_now = fit_a * x[-1] + fit_b
+    weight_goal = weight_orig + (12 * float(CONFIG['goal']) / 365 *
+            weight_loss_period)
 
     fig, ax = plt.subplots()
     ax.plot(data, 'k.')
-    ax.plot(x, fit_a * x + fit_b, 'g' if weight_now <= weight_goal else 'r')
-    ax.plot([x[0], x[-1]], [weight_orig, weight_goal], '--', color='orange')
+    means.plot.line(ax=ax, style='g' if weight_now <= weight_goal else 'r')
+    ax.plot([means.index[0].start_time, means.index[-1].start_time], [weight_orig, weight_goal], '--', color='orange')
     ax.set_ylim([min(weight_goal, weight_min_weight) - 1,
                  weight_max_weight + 1])
     ax.yaxis.set_ticks_position('both')
+    ax.get_legend().remove()
     fig.autofmt_xdate()
 
     update.message.reply_text(

@@ -32,15 +32,15 @@ urwid = "*"
 wcwidth = "*"
 
 [dev-packages]
-"autopep8" = "*"
-"flake8" = "*"
 future = "*"
 futures = "*"
 pudb = "*"
-pycodestyle = "*"
-pyflakes = "*"
 six = "*"
 typing = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

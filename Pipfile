@@ -38,6 +38,8 @@ pudb = "*"
 six = "*"
 typing = "*"
 black = "*"
+flake8 = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"

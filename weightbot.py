@@ -81,7 +81,9 @@ def bot_stats(bot, update):
     data = pd.read_csv(
         CONFIG["csvfile"], parse_dates=["timestamp"], index_col="timestamp"
     )
-    data.index = pd.to_datetime(data.index, utc=True).tz_convert("Europe/Brussels")
+    data.index = pd.to_datetime(data.index, utc=True).tz_convert(
+        "Europe/Brussels"
+    )
 
     weekweight_mean_weight = data.last("7d").weight.mean()
 

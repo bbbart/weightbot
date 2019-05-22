@@ -11,14 +11,18 @@ import tempfile
 from pathlib import Path
 
 import matplotlib
-
 matplotlib.use("agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pendulum
 import telegram
+from pandas.plotting import register_matplotlib_converters
 from telegram.ext import BaseFilter, CommandHandler, MessageHandler, Updater
+
+register_matplotlib_converters()
+
 
 BASEDIR = Path(__file__).parent
 

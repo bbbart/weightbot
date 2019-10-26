@@ -19,7 +19,7 @@ import pandas as pd
 import pendulum
 import telegram
 from pandas.plotting import register_matplotlib_converters
-from telegram.ext import BaseFilter, CommandHandler, MessageHandler, Updater
+from telegram.ext import BaseFilter, CallbackContext, CommandHandler, MessageHandler, Updater
 
 register_matplotlib_converters()
 
@@ -51,34 +51,34 @@ class WeightFilter(BaseFilter):
             return False
 
 
-def bot_start(bot, update):
+def bot_start(update: telegram.Update, context: CallbackContext):
     """Send a welcome message."""
     update.message.reply_text(
         "Hi! Just type in your current weight and I'll store it for you!"
     )
 
 
-def bot_error(bot, update, error):
+def bot_error(update: telegram.Update, context: CallbackContext):
     """Log errors caused by updates."""
-    LOGGER.warning(f"Update {update} caused error {error}")
+    LOGGER.warning(f"Update {update} caused error {context.error}")
     if update:
         update.message.reply_text("[some error occurred; check the log]")
 
 
-def bot_weight(bot, update):
+def bot_weight(update: telegram.Update, context: CallbackContext):
     """Store the given weight (if found acceptable)."""
-    bot.send_chat_action(
+    context.bot.send_chat_action(
         chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
     )
     weight = update.message.text
     store_weight(weight)
     update.message.reply_text(f"{weight}kg successfully stored!")
-    bot_stats(bot, update)
+    bot_stats(update, context)
 
 
-def bot_stats(bot, update):
+def bot_stats(update: telegram.Update, context: CallbackContext):
     """Generate more elaborate progress statistics."""
-    bot.send_chat_action(
+    context.bot.send_chat_action(
         chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
     )
 
@@ -134,7 +134,7 @@ def bot_stats(bot, update):
         f"({weight_min_timestamp}) and maximum was {weight_max_weight:.1f}kg "
         f"({weight_max_timestamp})."
     )
-    bot.send_chat_action(
+    context.bot.send_chat_action(
         chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
     )
 
@@ -163,7 +163,7 @@ def main():
             weightwriter = csv.writer(csvfile)
             weightwriter.writerow(["timestamp", "weight"])
 
-    updater = Updater(CONFIG["token"])
+    updater = Updater(CONFIG["token"], use_context=True)
 
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", bot_start))

@@ -10,7 +10,9 @@ pendulum = "*"
 python-telegram-bot = "*"
 
 [dev-packages]
+bpython = "*"
 isort = "*"
+pudb = "*"
 
 [requires]
 python_version = "3.7"

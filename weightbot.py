@@ -133,6 +133,9 @@ def bot_stats(update: telegram.Update, context: CallbackContext):
     )
     ax.yaxis.set_ticks_position("both")
     ax.get_legend().remove()
+    ax.tick_params(labeltop=False, labelright=True)
+    plt.xlabel("")
+    plt.ylabel("kg")
     fig.autofmt_xdate()
 
     update.message.reply_text(

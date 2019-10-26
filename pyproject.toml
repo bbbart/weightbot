@@ -1,0 +1,8 @@
+[tool.black]
+line-length = 79
+merge-issues = true
+workers = 3
+disabled = []
+noqa = true
+extends = []
+ignore-missing-extends = false

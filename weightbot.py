@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("agg")
 
 import matplotlib.pyplot as plt
@@ -19,7 +20,13 @@ import pandas as pd
 import pendulum
 import telegram
 from pandas.plotting import register_matplotlib_converters
-from telegram.ext import BaseFilter, CallbackContext, CommandHandler, MessageHandler, Updater
+from telegram.ext import (
+    BaseFilter,
+    CallbackContext,
+    CommandHandler,
+    MessageHandler,
+    Updater,
+)
 
 register_matplotlib_converters()
 

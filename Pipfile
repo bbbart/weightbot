@@ -13,6 +13,7 @@ python-telegram-bot = "*"
 bpython = "*"
 isort = "*"
 pudb = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"

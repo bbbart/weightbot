@@ -178,7 +178,7 @@ def main():
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", bot_start))
     dispatcher.add_handler(CommandHandler("stats", bot_stats))
-    dispatcher.add_handler(MessageHandler(WeightFilter(), bot_weight))
+    dispatcher.add_handler(MessageHandler(WeightFilter, bot_weight))
     dispatcher.add_error_handler(bot_error)
 
     updater.start_polling()

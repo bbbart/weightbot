@@ -79,10 +79,16 @@ def bot_weight(update: telegram.Update, context: CallbackContext):
     weight = update.message.text
     store_weight(weight)
     update.message.reply_text(f"{weight}kg successfully stored!")
-    bot_localstats(update, context)
+    bot_stats(update, context, last="1M", resample="2D", goal=False)
 
 
-def bot_globalstats(update: telegram.Update, context: CallbackContext):
+def bot_stats(
+    update: telegram.Update,
+    context: CallbackContext,
+    last=None,
+    resample="W",
+    goal=True,
+):
     """Generate more elaborate progress statistics."""
     context.bot.send_chat_action(
         chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
@@ -97,6 +103,9 @@ def bot_globalstats(update: telegram.Update, context: CallbackContext):
 
     weekweight_mean_weight = data.last("7d").weight.mean()
 
+    if last:
+        data = data.last(last)
+
     weight_min_weight = data.loc[data.weight.idxmin()].weight
     weight_min_timestamp = pendulum.instance(
         data.weight.idxmin()
@@ -107,7 +116,7 @@ def bot_globalstats(update: telegram.Update, context: CallbackContext):
         data.weight.idxmax()
     ).diff_for_humans()
 
-    means = data.resample("W", kind="period").mean()
+    means = data.resample(resample, kind="period").mean()
     weight_orig = means.weight[0]
     weight_now = means.weight[-1]
     weight_loss = weight_orig - weight_now
@@ -121,15 +130,16 @@ def bot_globalstats(update: telegram.Update, context: CallbackContext):
     fig, axes = plt.subplots()
     axes.plot(data, "k.")
     means.plot.line(ax=axes, style="g" if weight_now <= weight_goal else "r")
-    axes.plot(
-        [means.index[0].start_time, means.index[-1].start_time],
-        [weight_orig, weight_goal],
-        "--",
-        color="orange",
-    )
-    axes.set_ylim(
-        [min(weight_goal, weight_min_weight) - 1, weight_max_weight + 1]
-    )
+    if goal:
+        axes.plot(
+            [means.index[0].start_time, means.index[-1].start_time],
+            [weight_orig, weight_goal],
+            "--",
+            color="orange",
+        )
+        axes.set_ylim(
+            [min(weight_goal, weight_min_weight) - 1, weight_max_weight + 1]
+        )
     axes.yaxis.set_ticks_position("both")
     axes.get_legend().remove()
     axes.tick_params(labeltop=False, labelright=True)
@@ -139,7 +149,7 @@ def bot_globalstats(update: telegram.Update, context: CallbackContext):
 
     update.message.reply_text(
         f"Your weight mean the past week is {weekweight_mean_weight:.1f}kg. "
-        f"The minimum over the complete period was {weight_min_weight:.1f}kg "
+        f"The minimum over the shown period was {weight_min_weight:.1f}kg "
         f"({weight_min_timestamp}) and maximum was {weight_max_weight:.1f}kg "
         f"({weight_max_timestamp})."
     )
@@ -154,75 +164,6 @@ def bot_globalstats(update: telegram.Update, context: CallbackContext):
     update.message.reply_text(
         f"You have {gainedlost} {weight_loss:.1f}kg "
         f"in {weight_loss_period:.0f} days"
-    )
-
-
-def bot_localstats(update: telegram.Update, context: CallbackContext):
-    """Generate some progress statistics."""
-    context.bot.send_chat_action(
-        chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
-    )
-
-    data = pd.read_csv(
-        CONFIG["csvfile"], parse_dates=["timestamp"], index_col="timestamp"
-    )
-    data.index = pd.to_datetime(data.index, utc=True).tz_convert(
-        "Europe/Brussels"
-    )
-    data = data.last("1m")
-
-    monthweight_mean_weight = data.weight.mean()
-
-    weight_min_weight = data.loc[data.weight.idxmin()].weight
-    weight_min_timestamp = pendulum.instance(
-        data.weight.idxmin()
-    ).diff_for_humans()
-
-    weight_max_weight = data.loc[data.weight.idxmax()].weight
-    weight_max_timestamp = pendulum.instance(
-        data.weight.idxmax()
-    ).diff_for_humans()
-
-    means = data.resample("D", kind="period").mean()
-    weight_orig = means.weight[0]
-    weight_now = means.weight[-1]
-    weight_loss = weight_orig - weight_now
-    weight_loss_period = (
-        data.index.max() - data.index.min()
-    ) / np.timedelta64(1, "D")
-    weight_goal = weight_orig + (
-        12 * float(CONFIG["goal"]) / 365 * weight_loss_period
-    )
-
-    fig, axes = plt.subplots()
-    axes.plot(data, "k.")
-    means.plot.line(ax=axes, style="g" if weight_now <= weight_goal else "r")
-    axes.set_ylim(
-        [min(weight_goal, weight_min_weight) - 1, weight_max_weight + 1]
-    )
-    axes.yaxis.set_ticks_position("both")
-    axes.get_legend().remove()
-    axes.tick_params(labeltop=False, labelright=True)
-    plt.xlabel("")
-    plt.ylabel("kg")
-    fig.autofmt_xdate()
-
-    update.message.reply_text(
-        f"Your weight mean the past month is {monthweight_mean_weight:.1f}kg. "
-        f"The minimum this month was {weight_min_weight:.1f}kg "
-        f"({weight_min_timestamp}) and maximum was {weight_max_weight:.1f}kg "
-        f"({weight_max_timestamp})."
-    )
-    context.bot.send_chat_action(
-        chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
-    )
-
-    with tempfile.NamedTemporaryFile(suffix=".png") as figfile:
-        fig.savefig(figfile.name, bbox_inches="tight")
-        update.message.reply_photo(figfile)
-    gainedlost = "lost" if weight_loss >= 0 else "gained"
-    update.message.reply_text(
-        f"You have {gainedlost} {weight_loss:.1f}kg this month"
     )
 
 
@@ -245,7 +186,7 @@ def main():
 
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", bot_start))
-    dispatcher.add_handler(CommandHandler("stats", bot_globalstats))
+    dispatcher.add_handler(CommandHandler("stats", bot_stats))
     dispatcher.add_handler(MessageHandler(WeightFilter(), bot_weight))
     dispatcher.add_error_handler(bot_error)
 

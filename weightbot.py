@@ -79,7 +79,7 @@ def bot_weight(update: telegram.Update, context: CallbackContext):
     weight = update.message.text
     store_weight(weight)
     update.message.reply_text(f"{weight}kg successfully stored!")
-    bot_stats(update, context, last="1M", resample="2D", goal=False)
+    bot_stats(update, context, last="3M", resample="W", goal=False)
 
 
 def bot_stats(
@@ -165,6 +165,7 @@ def bot_stats(
         f"You have {gainedlost} {weight_loss:.1f}kg "
         f"in {weight_loss_period:.0f} days"
     )
+    plt.close(fig)
 
 
 def store_weight(weight):

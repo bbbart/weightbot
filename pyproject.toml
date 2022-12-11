@@ -6,3 +6,27 @@ disabled = []
 noqa = true
 extends = []
 ignore-missing-extends = false
+
+[tool.poetry]
+name = "weightbot"
+version = "1.0"
+description = "Telegram bot for keeping track of your body weight"
+authors = ["Bart Van Loon <bbb@bbbart.be>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+matplotlib = "^3.6.2"
+pendulum = "^2.1.2"
+python-telegram-bot = "^13.15"
+pandas = "^1.5.2"
+
+[tool.poetry.group.dev.dependencies]
+bpython = "^0.23"
+ropevim = "^0.8.1"
+pylint = "^2.15.8"
+pudb = "^2022.1.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

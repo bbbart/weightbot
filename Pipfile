@@ -4,14 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-matplotlib = "*"
-pandas = "*"
-pendulum = "*"
-python-telegram-bot = "*"
 
 [dev-packages]
-bpython = "*"
-isort = "*"
-pudb = "*"
-pylint = "*"
-ropevim = "*"
+
+[requires]
+python_version = "3.11"

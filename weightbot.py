@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-"""Telegram Bot to collect weight measurements and their timestamp into a
-CSV file for some very simple statistical analysis and goal follow-up.
+"""Telegram Bot to collect weight measurements.
+
+Stores the measurements and their timestamps into a CSV file for some very
+simple statistical analysis and goal follow-up.
 """
 
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position, ungrouped-imports
 # matplotlib quirk
 
 import configparser
@@ -63,6 +64,8 @@ class WeightFilter(MessageFilter):
             return False
 
 
+# pylint: disable=unused-argument
+# We just don't need it.
 async def bot_start(update: telegram.Update, context: CallbackContext):
     """Send a welcome message."""
     update.message.reply_text(
@@ -89,6 +92,8 @@ async def bot_weight(update: telegram.Update, context: CallbackContext):
     bot_stats(update, context, last="100d", resample="10d", goal=False)
 
 
+# pylint: disable=too-many-locals
+# Sorry...
 async def bot_stats(
     update: telegram.Update,
     context: CallbackContext,
@@ -179,7 +184,9 @@ async def bot_stats(
 
 def store_weight(weight):
     """Write the given weight to the CSV file with the current timestamp."""
-    with open(CONFIG["csvfile"], mode="a", newline="") as csvfile:
+    with open(
+        CONFIG["csvfile"], mode="a", newline="", encoding="utf-8"
+    ) as csvfile:
         weightwriter = csv.writer(csvfile)
         weightwriter.writerow([pendulum.now(), weight])
 
@@ -188,7 +195,9 @@ def main():
     """Run bot."""
     csvfile_path = Path(CONFIG["csvfile"])
     if not csvfile_path.is_file() or csvfile_path.stat().st_size == 0:
-        with csvfile_path.open(mode="w", newline="") as csvfile:
+        with csvfile_path.open(
+            mode="w", newline="", encoding="utf-8"
+        ) as csvfile:
             weightwriter = csv.writer(csvfile)
             weightwriter.writerow(["timestamp", "weight"])
 

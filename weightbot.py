@@ -20,8 +20,14 @@ import pandas as pd
 import pendulum
 import telegram
 from pandas.plotting import register_matplotlib_converters
-from telegram.ext import (CallbackContext, CommandHandler, MessageFilter,
-                          MessageHandler, Updater)
+from telegram.ext import (
+    Application,
+    CallbackContext,
+    CommandHandler,
+    MessageHandler,
+    Updater,
+)
+from telegram.ext.filters import MessageFilter
 
 matplotlib.use("agg")
 
@@ -57,24 +63,25 @@ class WeightFilter(MessageFilter):
             return False
 
 
-def bot_start(update: telegram.Update, context: CallbackContext):
+async def bot_start(update: telegram.Update, context: CallbackContext):
     """Send a welcome message."""
     update.message.reply_text(
         "Hi! Just type in your current weight and I'll store it for you!"
     )
 
 
-def bot_error(update: telegram.Update, context: CallbackContext):
+async def bot_error(update: telegram.Update, context: CallbackContext):
     """Log errors caused by updates."""
     LOGGER.warning("Update %s caused error %s", update, context.error)
     if update:
         update.message.reply_text("[some error occurred; check the log]")
 
 
-def bot_weight(update: telegram.Update, context: CallbackContext):
+async def bot_weight(update: telegram.Update, context: CallbackContext):
     """Store the given weight (if found acceptable)."""
     context.bot.send_chat_action(
-        chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+        chat_id=update.message.chat_id,
+        action=telegram.constats.ChatAction.TYPING,
     )
     weight = update.message.text
     store_weight(weight)
@@ -82,7 +89,7 @@ def bot_weight(update: telegram.Update, context: CallbackContext):
     bot_stats(update, context, last="100d", resample="10d", goal=False)
 
 
-def bot_stats(
+async def bot_stats(
     update: telegram.Update,
     context: CallbackContext,
     last=None,
@@ -90,8 +97,9 @@ def bot_stats(
     goal=True,
 ):
     """Generate more elaborate progress statistics."""
-    context.bot.send_chat_action(
-        chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+    await context.bot.send_chat_action(
+        chat_id=update.message.chat_id,
+        action=telegram.constants.ChatAction.TYPING,
     )
 
     data = pd.read_csv(
@@ -147,21 +155,22 @@ def bot_stats(
     plt.ylabel("kg")
     fig.autofmt_xdate()
 
-    update.message.reply_text(
+    await update.message.reply_text(
         f"Your weight mean the past week is {weekweight_mean_weight:.1f}kg. "
         f"The minimum over the shown period was {weight_min_weight:.1f}kg "
         f"({weight_min_timestamp}) and maximum was {weight_max_weight:.1f}kg "
         f"({weight_max_timestamp})."
     )
-    context.bot.send_chat_action(
-        chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+    await context.bot.send_chat_action(
+        chat_id=update.message.chat_id,
+        action=telegram.constants.ChatAction.TYPING,
     )
 
     with tempfile.NamedTemporaryFile(suffix=".png") as figfile:
         fig.savefig(figfile.name, bbox_inches="tight")
-        update.message.reply_photo(figfile)
+        await update.message.reply_photo(figfile)
     gainedlost = "lost" if weight_loss >= 0 else "gained"
-    update.message.reply_text(
+    await update.message.reply_text(
         f"You have {gainedlost} {abs(weight_loss):.1f}kg "
         f"in {weight_loss_period:.0f} days"
     )
@@ -183,16 +192,13 @@ def main():
             weightwriter = csv.writer(csvfile)
             weightwriter.writerow(["timestamp", "weight"])
 
-    updater = Updater(CONFIG["token"], use_context=True)
+    application = Application.builder().token(CONFIG["token"]).build()
+    application.add_handler(CommandHandler("start", bot_start))
+    application.add_handler(CommandHandler("stats", bot_stats))
+    application.add_handler(MessageHandler(WeightFilter(), bot_weight))
+    application.add_error_handler(bot_error)
 
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("start", bot_start))
-    dispatcher.add_handler(CommandHandler("stats", bot_stats))
-    dispatcher.add_handler(MessageHandler(WeightFilter(), bot_weight))
-    dispatcher.add_error_handler(bot_error)
-
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 
 if __name__ == "__main__":

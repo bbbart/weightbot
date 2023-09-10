@@ -82,14 +82,14 @@ async def bot_error(update: telegram.Update, context: CallbackContext):
 
 async def bot_weight(update: telegram.Update, context: CallbackContext):
     """Store the given weight (if found acceptable)."""
-    context.bot.send_chat_action(
+    await context.bot.send_chat_action(
         chat_id=update.message.chat_id,
-        action=telegram.constats.ChatAction.TYPING,
+        action=telegram.constants.ChatAction.TYPING,
     )
     weight = update.message.text
     store_weight(weight)
-    update.message.reply_text(f"{weight}kg successfully stored!")
-    bot_stats(update, context, last="100d", resample="10d", goal=False)
+    await update.message.reply_text(f"{weight}kg successfully stored!")
+    await bot_stats(update, context, last="100d", resample="10d", goal=False)
 
 
 # pylint: disable=too-many-locals
